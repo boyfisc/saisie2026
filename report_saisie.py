@@ -5,12 +5,9 @@ url = "https://docs.google.com/spreadsheets/d/1L2tPAY-SjzQCHeT7v9VL_qsgQmV90kz21
 
 @st.cache_data
 def load_data():
-    # sheet_name=None renvoie un dictionnaire : {"Nom de l'onglet": DataFrame}
     return pd.read_excel(url, sheet_name=None)
 
 all_sheets = load_data()
-
-# Indicateurs basés sur l'onglet principal
 df_main = all_sheets.get("Réponses au formulaire")
 
 if df_main is not None:
@@ -20,7 +17,7 @@ if df_main is not None:
         for col in df.columns:
             if col.lower() == name.lower():
                 return col
-        return name
+            return name
 
     col_email = get_col(df_main, "Adresse e-mail")
     col_raison = get_col(df_main, "RAISON SOCIALE")
@@ -52,11 +49,11 @@ if df_main is not None:
 else:
     st.error("L'onglet 'Réponses au formulaire' est introuvable.")
 
-st.subheader("Données Brutes (Autres onglets)")
+st.subheader("Details Saisies")
 autres_onglets = [onglet for onglet in all_sheets.keys() if onglet != "Réponses au formulaire"]
 
 if autres_onglets:
     onglet_choisi = st.selectbox("Sélectionner un onglet à visualiser", autres_onglets)
-    st.dataframe(all_sheets[onglet_choisi])
+    st.dataframe(all_sheets[onglet_choisi], use_container_width=True)
 else:
     st.info("Aucun autre onglet détecté dans le fichier.")
