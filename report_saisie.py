@@ -13,7 +13,6 @@ df_main = all_sheets.get("Réponses au formulaire")
 if df_main is not None:
     df_main.columns = df_main.columns.str.strip()
 
-    # Fonction corrigée : l'indentation de 'return name' est sortie de la boucle for
     def get_col(df, name):
         for col in df.columns:
             if col.lower() == name.lower():
@@ -21,20 +20,29 @@ if df_main is not None:
         return name
 
     col_email = get_col(df_main, "Adresse e-mail")
-    col_raison = get_col(df_main, "RAISON SOCIALE")
     col_nature = get_col(df_main, "Nature d'impôt")
     col_centre = get_col(df_main, "Centre Fiscal")
+
+    # Identification de toutes les colonnes contenant "ninea"
+    cols_ninea = [col for col in df_main.columns if 'ninea' in col.lower()]
 
     st.title("Indicateurs Administratifs")
 
     total_saisies = len(df_main)
-    total_raisons = df_main[col_raison].nunique() if col_raison in df_main.columns else 0
+    
+    # Extraction et comptage des valeurs uniques sur toutes les colonnes NINEA
+    if cols_ninea:
+        valeurs_ninea = pd.concat([df_main[col] for col in cols_ninea]).dropna()
+        total_ninea_uniques = valeurs_ninea.nunique()
+    else:
+        total_ninea_uniques = 0
+
     total_agents = df_main[col_email].nunique() if col_email in df_main.columns else 0
     total_centres = df_main[col_centre].nunique() if col_centre in df_main.columns else 0
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Saisies", total_saisies)
-    c2.metric("Entreprises Uniques", total_raisons)
+    c2.metric("NINEA Uniques", total_ninea_uniques)
     c3.metric("Agents", total_agents)
     c4.metric("Centres Fiscaux", total_centres)
 
