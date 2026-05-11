@@ -13,11 +13,12 @@ df_main = all_sheets.get("Réponses au formulaire")
 if df_main is not None:
     df_main.columns = df_main.columns.str.strip()
 
+    # Fonction corrigée : l'indentation de 'return name' est sortie de la boucle for
     def get_col(df, name):
         for col in df.columns:
             if col.lower() == name.lower():
                 return col
-            return name
+        return name
 
     col_email = get_col(df_main, "Adresse e-mail")
     col_raison = get_col(df_main, "RAISON SOCIALE")
