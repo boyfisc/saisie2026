@@ -23,14 +23,12 @@ if df_main is not None:
     col_nature = get_col(df_main, "Nature d'impôt")
     col_centre = get_col(df_main, "Centre Fiscal")
 
-    # Identification de toutes les colonnes contenant "ninea"
     cols_ninea = [col for col in df_main.columns if 'ninea' in col.lower()]
 
     st.title("Indicateurs Administratifs")
 
     total_saisies = len(df_main)
     
-    # Extraction et comptage des valeurs uniques sur toutes les colonnes NINEA
     if cols_ninea:
         valeurs_ninea = pd.concat([df_main[col] for col in cols_ninea]).dropna()
         total_ninea_uniques = valeurs_ninea.nunique()
@@ -38,21 +36,42 @@ if df_main is not None:
         total_ninea_uniques = 0
 
     total_agents = df_main[col_email].nunique() if col_email in df_main.columns else 0
-    total_centres = df_main[col_centre].nunique() if col_centre in df_main.columns else 0
+    
+    if col_centre in df_main.columns:
+        centres_uniques = df_main[col_centre].dropna().unique()
+        total_centres = len(centres_uniques)
+    else:
+        centres_uniques = []
+        total_centres = 0
 
-    c1, c2, c3, c4 = st.columns(4)
+    # Élargissement des indicateurs sur deux lignes (2 par ligne au lieu de 4)
+    c1, c2 = st.columns(2)
     c1.metric("Total Saisies", total_saisies)
     c2.metric("NINEA Uniques", total_ninea_uniques)
+    
+    st.write("") # Espace vertical
+
+    c3, c4 = st.columns(2)
     c3.metric("Agents", total_agents)
     c4.metric("Centres Fiscaux", total_centres)
 
     st.divider()
 
-    st.subheader("Détail par Nature d'impôt")
-    if col_nature in df_main.columns:
-        repartition = df_main[col_nature].value_counts().reset_index()
-        repartition.columns = ["Nature d'impôt", "Quantité"]
-        st.dataframe(repartition, hide_index=True)
+    # Affichage des listes réparties sur deux colonnes larges
+    col_gauche, col_droite = st.columns(2)
+
+    with col_gauche:
+        st.subheader("Liste des Centres Fiscaux")
+        if total_centres > 0:
+            df_centres = pd.DataFrame(centres_uniques, columns=["Nom du Centre"])
+            st.dataframe(df_centres, hide_index=True, use_container_width=True)
+
+    with col_droite:
+        st.subheader("Détail par Nature d'impôt")
+        if col_nature in df_main.columns:
+            repartition = df_main[col_nature].value_counts().reset_index()
+            repartition.columns = ["Nature d'impôt", "Quantité"]
+            st.dataframe(repartition, hide_index=True, use_container_width=True)
 
     st.divider()
 else:
